@@ -1,0 +1,7 @@
+streamlit
+numpy
+Pillow
+tensorflow>=2.10.0,<2.15.0
+python-dotenv
+joblib
+groq

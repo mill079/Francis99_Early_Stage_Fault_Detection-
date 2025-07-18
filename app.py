@@ -79,47 +79,51 @@ with st.container():
         submit = st.form_submit_button("🔍 Predict Fault Stage")
 
     if submit:
-        try:
-            # Step 1: Create a 1-row array and scale it
-            raw_input = np.array([[PDT1, PGV2, PDT3, ATB1, ATB2]])
-            scaled_input = scaler.transform(raw_input)
+        # Validate inputs
+        if all(value == 0.0 for value in [PDT1, PGV2, PDT3, ATB1, ATB2]):
+            st.warning("⚠️ Please enter sensor values before predicting.")
+        else:
+            try:
+                # Step 1: Create a 1-row array and scale it
+                raw_input = np.array([[PDT1, PGV2, PDT3, ATB1, ATB2]])
+                scaled_input = scaler.transform(raw_input)
 
-            # Step 2: Repeat it 30 times and reshape to (1, 30, 5)
-            user_input = np.tile(scaled_input, (30, 1)).reshape(1, 30, 5).astype(np.float32)
+                # Step 2: Repeat it 30 times and reshape to (1, 30, 5)
+                user_input = np.tile(scaled_input, (30, 1)).reshape(1, 30, 5).astype(np.float32)
 
-            # Step 3: Predict using model
-            prediction = model.predict(user_input)
-            fault_stage = int(np.argmax(prediction))
+                # Step 3: Predict using model
+                prediction = model.predict(user_input)
+                fault_stage = int(np.argmax(prediction))
 
-            st.markdown(f"<div class='result'>✅ <b>Predicted Fault Stage:</b> {fault_stage}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='result'>✅ <b>Predicted Fault Stage:</b> {fault_stage}</div>", unsafe_allow_html=True)
 
-            # Visual image slicing
-            full_image_path = "crackimage.jpg"
-            if os.path.exists(full_image_path):
-                image = Image.open(full_image_path)
-                cols, rows = 5, 2
-                img_width, img_height = image.size
-                cell_width = img_width // cols
-                cell_height = img_height // rows
+                # Visual image slicing
+                full_image_path = "crackimage.jpg"
+                if os.path.exists(full_image_path):
+                    image = Image.open(full_image_path)
+                    cols, rows = 5, 2
+                    img_width, img_height = image.size
+                    cell_width = img_width // cols
+                    cell_height = img_height // rows
 
-                row = fault_stage // cols
-                col = fault_stage % cols
-                left = col * cell_width
-                upper = row * cell_height
-                right = left + cell_width
-                lower = upper + cell_height
+                    row = fault_stage // cols
+                    col = fault_stage % cols
+                    left = col * cell_width
+                    upper = row * cell_height
+                    right = left + cell_width
+                    lower = upper + cell_height
 
-                stage_image = image.crop((left, upper, right, lower))
-                st.subheader("📷 Visual Reference of Predicted Stage")
-                st.image(stage_image, caption=f"Stage {fault_stage}", use_column_width=True)
-            else:
-                st.warning("⚠️ Reference image not found.")
+                    stage_image = image.crop((left, upper, right, lower))
+                    st.subheader("📷 Visual Reference of Predicted Stage")
+                    st.image(stage_image, caption=f"Stage {fault_stage}", use_column_width=True)
+                else:
+                    st.warning("⚠️ Reference image not found.")
 
-            # --- Prompt LLM for Explanation ---
-            prompt = [
-                {
-                    "role": "user",
-                    "content": f"""
+                # --- Prompt LLM for Explanation ---
+                prompt = [
+                    {
+                        "role": "user",
+                        "content": f"""
 You are a turbine fault expert AI. A Francis-99 turbine is predicted to be in fault stage `{fault_stage}` based on sensor input.
 
 Use the following reference to explain what this stage means:
@@ -150,26 +154,26 @@ Return only a JSON in this format:
   "recommendation": "What engineers should do next"
 }}
 """
-                }
-            ]
+                    }
+                ]
 
-            response = client.chat.completions.create(
-                model="llama3-70b-8192",
-                messages=prompt,
-                max_tokens=300,
-                temperature=0.4,
-            )
-            output = response.choices[0].message.content
+                response = client.chat.completions.create(
+                    model="llama3-70b-8192",
+                    messages=prompt,
+                    max_tokens=300,
+                    temperature=0.4,
+                )
+                output = response.choices[0].message.content
 
-            try:
-                result = json.loads(output)
-                st.subheader("🧠 Expert Interpretation")
-                st.json(result)
-            except json.JSONDecodeError:
-                st.warning("⚠️ Couldn't parse expert response. Showing raw text:")
-                st.code(output)
+                try:
+                    result = json.loads(output)
+                    st.subheader("🧠 Expert Interpretation")
+                    st.json(result)
+                except json.JSONDecodeError:
+                    st.warning("⚠️ Couldn't parse expert response. Showing raw text:")
+                    st.code(output)
 
-        except Exception as e:
-            st.error(f"❌ Something went wrong: {e}")
+            except Exception as e:
+                st.error(f"❌ Something went wrong: {e}")
 
     st.markdown("</div>", unsafe_allow_html=True)  # Close .main

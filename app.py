@@ -83,41 +83,48 @@ if submit:
         if all(value == 0.0 for value in [PDT1, PGV2, PDT3, ATB1, ATB2]):
             st.warning("⚠️ Please enter sensor values before predicting.")
         else:
-            try:
-                # Step 1: Create a 1-row array and scale it
-                raw_input = np.array([[PDT1, PGV2, PDT3, ATB1, ATB2]])
-                scaled_input = scaler.transform(raw_input)
+try:
+    # Step 1: Create a 1-row array and scale it
+    raw_input = np.array([[PDT1, PGV2, PDT3, ATB1, ATB2]])
+    scaled_input = scaler.transform(raw_input)
 
-                # Step 2: Repeat it 30 times and reshape to (1, 30, 5)
-                user_input = np.tile(scaled_input, (30, 1)).reshape(1, 30, 5).astype(np.float32)
+    # Step 2: Repeat it 30 times and reshape to (1, 30, 5)
+    user_input = np.tile(scaled_input, (30, 1)).reshape(1, 30, 5).astype(np.float32)
 
-                # Step 3: Predict using model
-                prediction = model.predict(user_input)
-                fault_stage = int(np.argmax(prediction))
+    # Step 3: Predict using model
+    prediction = model.predict(user_input)
+    fault_stage = int(np.argmax(prediction))
 
-                st.markdown(f"<div class='result'>✅ <b>Predicted Fault Stage:</b> {fault_stage}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='result'>✅ <b>Predicted Fault Stage:</b> {fault_stage}</div>", unsafe_allow_html=True)
 
-            # Visual image slicing
-            full_image_path = "crackimage.jpg"
-            if os.path.exists(full_image_path):
-                image = Image.open(full_image_path)
-                cols, rows = 5, 2
-                img_width, img_height = image.size
-                cell_width = img_width // cols
-                cell_height = img_height // rows
+    # Visual image slicing
+    full_image_path = "crackimage.jpg"
+    if os.path.exists(full_image_path):
+        image = Image.open(full_image_path)
+        cols, rows = 5, 2
+        img_width, img_height = image.size
+        cell_width = img_width // cols
+        cell_height = img_height // rows
 
-                row = fault_stage // cols
-                col = fault_stage % cols
-                left = col * cell_width
-                upper = row * cell_height
-                right = left + cell_width
-                lower = upper + cell_height
+        row = fault_stage // cols
+        col = fault_stage % cols
+        left = col * cell_width
+        upper = row * cell_height
+        right = left + cell_width
+        lower = upper + cell_height
 
-                stage_image = image.crop((left, upper, right, lower))
-                st.subheader("📷 Visual Reference of Predicted Stage")
-                st.image(stage_image, caption=f"Stage {fault_stage}", use_column_width=True)
-            else:
-                st.warning("⚠️ Reference image not found.")
+        stage_image = image.crop((left, upper, right, lower))
+        st.subheader("📷 Visual Reference of Predicted Stage")
+        st.image(stage_image, caption=f"Stage {fault_stage}", use_column_width=True)
+    else:
+        st.warning("⚠️ Reference image not found.")
+
+    # Prompt LLM for Explanation
+    # ... rest of your code inside try ...
+
+except Exception as e:
+    st.error(f"❌ Something went wrong: {e}")
+
 
             # --- Prompt LLM for Explanation ---
             prompt = [

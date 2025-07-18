@@ -1,7 +1,0 @@
-streamlit
-numpy
-pillow
-tensorflow
-python-dotenv
-joblib
-groq

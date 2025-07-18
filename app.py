@@ -95,7 +95,7 @@ with st.container():
             st.markdown(f"<div class='result'>✅ <b>Predicted Fault Stage:</b> {fault_stage}</div>", unsafe_allow_html=True)
 
             # Visual image slicing
-            full_image_path = "D:/AI/project/main model/crackimage.jpg"
+            full_image_path = "crackimage.jpg"
             if os.path.exists(full_image_path):
                 image = Image.open(full_image_path)
                 cols, rows = 5, 2

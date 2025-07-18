@@ -1,7 +1,0 @@
-streamlit
-numpy
-Pillow
-tensorflow==2.12.0
-python-dotenv
-joblib
-groq

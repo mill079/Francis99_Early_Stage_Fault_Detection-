@@ -8,5 +8,7 @@ python-dotenv
 streamlit==1.35.0
 
 # GROQ API client
-groq # Make sure this is correct or latest version from PyPI
+groq
+scikit-learn
+
 

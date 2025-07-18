@@ -79,20 +79,23 @@ with st.container():
 
         submit = st.form_submit_button("🔍 Predict Fault Stage")
 
-    if submit:
-        try:
-            # Step 1: Create a 1-row array and scale it
-            raw_input = np.array([[PDT1, PGV2, PDT3, ATB1, ATB2]])
-            scaled_input = scaler.transform(raw_input)
+if submit:
+        if all(value == 0.0 for value in [PDT1, PGV2, PDT3, ATB1, ATB2]):
+            st.warning("⚠️ Please enter sensor values before predicting.")
+        else:
+            try:
+                # Step 1: Create a 1-row array and scale it
+                raw_input = np.array([[PDT1, PGV2, PDT3, ATB1, ATB2]])
+                scaled_input = scaler.transform(raw_input)
 
-            # Step 2: Repeat it 30 times and reshape to (1, 30, 5)
-            user_input = np.tile(scaled_input, (30, 1)).reshape(1, 30, 5).astype(np.float32)
+                # Step 2: Repeat it 30 times and reshape to (1, 30, 5)
+                user_input = np.tile(scaled_input, (30, 1)).reshape(1, 30, 5).astype(np.float32)
 
-            # Step 3: Predict using model
-            prediction = model.predict(user_input)
-            fault_stage = int(np.argmax(prediction))
+                # Step 3: Predict using model
+                prediction = model.predict(user_input)
+                fault_stage = int(np.argmax(prediction))
 
-            st.markdown(f"<div class='result'>✅ <b>Predicted Fault Stage:</b> {fault_stage}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='result'>✅ <b>Predicted Fault Stage:</b> {fault_stage}</div>", unsafe_allow_html=True)
 
             # Visual image slicing
             full_image_path = "crackimage.jpg"

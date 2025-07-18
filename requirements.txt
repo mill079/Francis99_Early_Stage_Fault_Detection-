@@ -1,0 +1,12 @@
+# Core Libraries
+tensorflow==2.19.0
+keras==3.10.0
+numpy
+pillow
+joblib
+python-dotenv
+streamlit==1.35.0
+
+# GROQ API client
+groq # Make sure this is correct or latest version from PyPI
+
